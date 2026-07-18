@@ -1,0 +1,61 @@
+# POSTGRES_USER
+name: maindb
+services:
+  adminer:
+    image: adminer
+    restart: always
+    volumes:
+      - ${PWD}/misc_files/adminer-dark.css:/var/www/html/adminer-dark.css
+    ports:
+      - 8080:8080
+    networks:
+      - db_limited
+      - default
+    depends_on:
+      - psql
+
+  psql:
+    image: postgres:18.4-alpine
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/pp_pwd
+      GOGS_PWD: /run/secrets/gogs_pwd
+      FORGEJO_PWD: /run/secrets/forgejo_pwd
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=en_US.utf8"
+      POSTGRES_USER: pastryadmin
+      POSTGRES_DB: placeholder
+    secrets:
+    - pp_pwd
+    - gogs_pwd
+    - forgejo_pwd
+    ports:
+      - 5432:5432
+    volumes:
+      - psql:/var/lib/postgresql
+      - ${PWD}/init_files:/docker-entrypoint-initdb.d
+    user: "2000"
+    networks:
+      - db_limited
+
+secrets:
+  pp_pwd:
+    file: ${PWD}/secret_files/pp_pwd
+  gogs_pwd:
+    file: ${PWD}/secret_files/gogs_pwd
+  forgejo_pwd:
+    file: ${PWD}/secret_files/forgejo_pwd
+
+networks:
+  db_limited:
+    internal: true
+
+volumes:
+  psql:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: rw,addr=nfs.lan,nfsvers=4.1,hard,noatime,suid
+      # timeo=600,retrans=2,fg,rsize=8192,wsize=8192,acregmin=0,acregmax=0,acdirmin=0,acdirmax=0
+      # o: rw,addr=nfs.lan,nfsvers=4.1,hard
+      device: ":/volume1/psql"
