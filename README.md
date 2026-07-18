@@ -87,7 +87,3 @@ docker compose down -v
 - Any Git service integration that used to rely on Gogs-specific configuration has been moved outside of this project.
 - For NFS mount permissions, make sure to allow the whole CIDR (just in case), do no mapping squash, check the boxes "Allow connections from non priviliged ports" and "allow users to access mounted subfolders", no not allow synchronous. Also make sure the shared mount (root location) has the "Everyone" access permission with full control.
 
-
-## More Information
-
-See [AGENTS.md](AGENTS.md) for project-specific notes and operational guidance.
